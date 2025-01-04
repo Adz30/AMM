@@ -23,7 +23,7 @@ describe("AMM", () => {
 
     // deploy token
     const Token = await ethers.getContractFactory("Token");
-    token1 = await Token.deploy("Dapp University", "DAPP", "1000000");
+    token1 = await Token.deploy("BoomToken", "BMTK", "1000000");
     token2 = await Token.deploy("USD Token", "USD", "1000000");
 
     // send tokens to liquidity provider
