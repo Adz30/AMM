@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "./Token.sol";
 
-//manage pool
-//manage deposit
-//facilitate swaps
+//manage pool. done
+//manage deposit done
+//facilitate swaps done
 //manage withdraws
 
 contract AMM {
@@ -179,5 +179,34 @@ contract AMM {
             token2Balance,
             block.timestamp
         );
+    }
+    // determine how many tokens will be withdrawn
+    function calculateWithdrawAmount(
+        uint256 _share
+    ) public view returns (uint256 token1Amount, uint256 token2Amount) {
+        require(_share <= totalShares, "must be less than total shares");
+        token1Amount = (_share * token1Balance) / totalShares;
+        token2Amount = (_share * token2Balance) / totalShares;
+    }
+
+    // removes liquidity from pool
+    function removeLiquidity(
+        uint256 _share
+    ) external returns (uint256 token1Amount, uint256 token2Amount) {
+        require(
+            _share <= shares[msg.sender],
+            "cannot withdraw more shares than you have"
+        );
+        (token1Amount, token2Amount) = calculateWithdrawAmount(_share);
+
+        shares[msg.sender] -= _share;
+        totalShares -=  _share;
+
+        token1Balance -= token1Amount;
+        token2Balance -= token2Amount;
+        k = token1Balance * token2Balance;
+
+        token1.transfer(msg.sender, token1Amount);
+        token2.transfer(msg.sender, token2Amount);
     }
 }
