@@ -6,13 +6,15 @@ import { ethers } from "ethers";
 // Components
 import Navigation from "./Navigation";
 import Loading from "./Loading";
-import { loadAccount, loadNetwork, loadProvider } from "../store/interactions";
+import {
+  loadAccount,
+  loadNetwork,
+  loadProvider,
+  loadTokens,
+  loadAMM,
+} from "../store/interactions";
 
-// ABIs: Import your contract ABIs here
-// import TOKEN_ABI from '../abis/Token.json'
 
-// Config: Import your network config here
-// import config from '../config.json';
 
 function App() {
   const dispatch = useDispatch();
@@ -23,28 +25,37 @@ function App() {
 
     const chainId = await loadNetwork(provider, dispatch);
 
-    // Fetch accounts
-    await loadAccount(dispatch);
+    //reload page when network changes s
+    window.ethereum.on('chainChanged', () => {
+      window.location.reload()
+    })
 
-    // Fetch account balance
+    // Fetch accounts
+    window.ethereum.on("accountsChanged", async () => {
+      await loadAccount(dispatch);
+    });
+
+    // initate contracts
+    await loadTokens(provider, chainId, dispatch);
+
+    await loadAMM(provider, chainId, dispatch);
   };
 
   useEffect(() => {
-      loadBlockchainData();
-    
-    }, []);
+    loadBlockchainData();
+  }, []);
 
   return (
     <Container>
-      <Navigation account={'0x0...'} />
+      <Navigation />
 
       <h1 className="my-4 text-center">React Hardhat Template</h1>
 
       <>
-       <p className="text centre" ><strong> your eth balance:</strong> 0 ETH</p>
+        <p className="text-centre">
+          <strong> your eth balance:</strong> 0 ETH
+        </p>
       </>
-
-     
     </Container>
   );
 }
