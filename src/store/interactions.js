@@ -1,99 +1,143 @@
-import { ethers } from 'ethers'
+import { ethers } from "ethers";
 
-import { setProvider, setNetwork, setAccount } from './reducers/provider';
-import { setContracts, setSymbols, balancesLoaded } from './reducers/tokens';
-import { setContract, sharesLoaded, swapRequest, swapSuccess, swapFail } from './reducers/amm'
+import { setProvider, setNetwork, setAccount } from "./reducers/provider";
+import { setContracts, setSymbols, balancesLoaded } from "./reducers/tokens";
+import {
+  setContract,
+  sharesLoaded,
+  swapRequest,
+  swapSuccess,
+  swapFail,
+  depositRequest,
+  depositFail,
+  depositSuccess,
+} from "./reducers/amm";
 
-import TOKEN_ABI from '../abis/Token.json';
-import AMM_ABI from '../abis/AMM.json';
-import config from '../config.json';
+import TOKEN_ABI from "../abis/Token.json";
+import AMM_ABI from "../abis/AMM.json";
+import config from "../config.json";
 
 export const loadProvider = (dispatch) => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    dispatch(setProvider(provider))
-    
-    return provider
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  dispatch(setProvider(provider));
 
-}
+  return provider;
+};
 export const loadNetwork = async (provider, dispatch) => {
- const { chainId } = await provider.getNetwork()
- dispatch(setNetwork(chainId))
+  const { chainId } = await provider.getNetwork();
+  dispatch(setNetwork(chainId));
 
- return chainId
-}
+  return chainId;
+};
 
 export const loadAccount = async (dispatch) => {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-    const account = ethers.utils.getAddress(accounts[0])
-    dispatch(setAccount(account))
+  const accounts = await window.ethereum.request({
+    method: "eth_requestAccounts",
+  });
+  const account = ethers.utils.getAddress(accounts[0]);
+  dispatch(setAccount(account));
 
-    return account
-}
+  return account;
+};
 // load contracts
-export const loadTokens = async(provider, chainId, dispatch) => {
-    const bmtk = new ethers.Contract(config[chainId].bmtk.address, TOKEN_ABI, provider)
-    const usd = new ethers.Contract(config[chainId].usd.address, TOKEN_ABI, provider)
+export const loadTokens = async (provider, chainId, dispatch) => {
+  const bmtk = new ethers.Contract(
+    config[chainId].bmtk.address,
+    TOKEN_ABI,
+    provider
+  );
+  const usd = new ethers.Contract(
+    config[chainId].usd.address,
+    TOKEN_ABI,
+    provider
+  );
 
-    dispatch(setContracts([bmtk, usd]))
-    dispatch(setSymbols([await bmtk.symbol(), await usd.symbol() ]))
-}// load contracts
-export const loadAMM = async(provider, chainId, dispatch) => {
-    const amm = new ethers.Contract(config[chainId].amm.address, AMM_ABI, provider)
-    
+  dispatch(setContracts([bmtk, usd]));
+  dispatch(setSymbols([await bmtk.symbol(), await usd.symbol()]));
+}; // load contracts
+export const loadAMM = async (provider, chainId, dispatch) => {
+  const amm = new ethers.Contract(
+    config[chainId].amm.address,
+    AMM_ABI,
+    provider
+  );
 
-    dispatch(setContract    (amm))
-    
-    return amm 
-}
+  dispatch(setContract(amm));
+
+  return amm;
+};
 
 // load balances and shares
 export const loadBalances = async (amm, tokens, account, dispatch) => {
-    const balance1 = await tokens[0].balanceOf(account)
-    const balance2 = await tokens[1].balanceOf(account)
-   
-    
-    dispatch(balancesLoaded([
-        ethers.utils.formatUnits(balance1.toString(), 'ether'),
-        ethers.utils.formatUnits(balance2.toString(), 'ether')
-      
-    ]))
-    const shares = await amm.shares(account)
-    dispatch(sharesLoaded(ethers.utils.formatUnits(shares.toString(), 'ether')))
+  const balance1 = await tokens[0].balanceOf(account);
+  const balance2 = await tokens[1].balanceOf(account);
 
+  dispatch(
+    balancesLoaded([
+      ethers.utils.formatUnits(balance1.toString(), "ether"),
+      ethers.utils.formatUnits(balance2.toString(), "ether"),
+    ])
+  );
+  const shares = await amm.shares(account);
+  dispatch(sharesLoaded(ethers.utils.formatUnits(shares.toString(), "ether")));
+};
+///// add liquidity
+export const addLiquidity = async (
+  provider,
+  amm,
+  tokens,
+  amounts,
+  dispatch
+) => {
+  try {
+    dispatch(depositRequest());
 
+    const signer = await provider.getSigner();
 
+    let transaction;
 
-}
+    transaction = await tokens[0]
+      .connect(signer)
+      .approve(amm.address, amounts[0]);
+    await transaction.wait();
+
+    transaction = await tokens[1]
+      .connect(signer)
+      .approve(amm.address, amounts[1]);
+    await transaction.wait();
+
+    transaction = await amm
+      .connect(signer)
+      .addLiquidity(amounts[0], amounts[1]);
+    await transaction.wait();
+
+    dispatch(depositSuccess(transaction.hash));
+  } catch {
+    dispatch(depositFail());
+  }
+};
 
 ///////swap
-export const swap = async(provider, amm, token , symbol, amount, dispatch) => {
-try {
-    
-    dispatch(swapRequest())
-    let transaction 
-    
-    const signer = await provider.getSigner()
+export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
+  try {
+    dispatch(swapRequest());
+    let transaction;
 
-    transaction = await token.connect(signer).approve(amm.address, amount)
-    await transaction.wait
-    
+    const signer = await provider.getSigner();
+
+    transaction = await token.connect(signer).approve(amm.address, amount);
+    await transaction.wait;
+
     if (symbol === "BMTK") {
-    transaction = await amm.connect(signer).swapToken1(amount)
-    await transaction.wait()
+      transaction = await amm.connect(signer).swapToken1(amount);
+      await transaction.wait();
     } else {
-    transaction = await amm.connect(signer).swapToken2(amount)
+      transaction = await amm.connect(signer).swapToken2(amount);
     }
-    await transaction.wait()
-    
-    
+    await transaction.wait();
 
-
-dispatch(swapSuccess(transaction.hash))
-
-} catch (error){
-    dispatch(swapFail())
-
-}
-
-
+    dispatch(swapSuccess(transaction.hash));
+  } catch (error) {
+    dispatch(swapFail());
+  }
 };
