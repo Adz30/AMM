@@ -11,11 +11,15 @@ import {
   depositRequest,
   depositFail,
   depositSuccess,
+  withdrawRequest,
+  withdrawFail,
+  withdrawSuccess,
 } from "./reducers/amm";
 
 import TOKEN_ABI from "../abis/Token.json";
 import AMM_ABI from "../abis/AMM.json";
 import config from "../config.json";
+import Withdraw from "../components/Withdraw";
 
 export const loadProvider = (dispatch) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -94,6 +98,7 @@ export const addLiquidity = async (
 
     const signer = await provider.getSigner();
 
+
     let transaction;
 
     transaction = await tokens[0]
@@ -112,10 +117,32 @@ export const addLiquidity = async (
     await transaction.wait();
 
     dispatch(depositSuccess(transaction.hash));
-  } catch {
+  } catch (error){
     dispatch(depositFail());
   }
+
+
 };
+
+//// remove liquidity
+export const removeLiquidity = async (provider, amm, shares, dispatch) => {
+  try {
+    dispatch(withdrawRequest( ));
+
+    const signer = await provider.getSigner();
+
+    
+    let transaction = await amm.connect(signer)
+      .removeLiquidity(shares);
+    await transaction.wait();
+
+
+    dispatch(withdrawSuccess(transaction.hash));
+  } catch (error){
+    dispatch(withdrawFail());
+  }
+
+}
 
 ///////swap
 export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
