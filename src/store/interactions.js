@@ -5,6 +5,7 @@ import { setContracts, setSymbols, balancesLoaded } from "./reducers/tokens";
 import {
   setContract,
   sharesLoaded,
+  swapsLoaded,
   swapRequest,
   swapSuccess,
   swapFail,
@@ -19,7 +20,7 @@ import {
 import TOKEN_ABI from "../abis/Token.json";
 import AMM_ABI from "../abis/AMM.json";
 import config from "../config.json";
-import Withdraw from "../components/Withdraw";
+
 
 export const loadProvider = (dispatch) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -43,6 +44,7 @@ export const loadAccount = async (dispatch) => {
 
   return account;
 };
+//---------------------------------------------------------------------------
 // load contracts
 export const loadTokens = async (provider, chainId, dispatch) => {
   const bmtk = new ethers.Contract(
@@ -58,7 +60,9 @@ export const loadTokens = async (provider, chainId, dispatch) => {
 
   dispatch(setContracts([bmtk, usd]));
   dispatch(setSymbols([await bmtk.symbol(), await usd.symbol()]));
-}; // load contracts
+}; 
+
+// load contracts
 export const loadAMM = async (provider, chainId, dispatch) => {
   const amm = new ethers.Contract(
     config[chainId].amm.address,
@@ -70,7 +74,7 @@ export const loadAMM = async (provider, chainId, dispatch) => {
 
   return amm;
 };
-
+//---------------------------------------------------------------------------
 // load balances and shares
 export const loadBalances = async (amm, tokens, account, dispatch) => {
   const balance1 = await tokens[0].balanceOf(account);
@@ -85,6 +89,7 @@ export const loadBalances = async (amm, tokens, account, dispatch) => {
   const shares = await amm.shares(account);
   dispatch(sharesLoaded(ethers.utils.formatUnits(shares.toString(), "ether")));
 };
+//------------------------------------------------------------------------------
 ///// add liquidity
 export const addLiquidity = async (
   provider,
@@ -123,7 +128,7 @@ export const addLiquidity = async (
 
 
 };
-
+//-------------------------------------------------------------------------
 //// remove liquidity
 export const removeLiquidity = async (provider, amm, shares, dispatch) => {
   try {
@@ -143,7 +148,7 @@ export const removeLiquidity = async (provider, amm, shares, dispatch) => {
   }
 
 }
-
+//-----------------------------------------------------------------------------
 ///////swap
 export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
   try {
@@ -168,3 +173,17 @@ export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
     dispatch(swapFail());
   }
 };
+////////---------------------------------------------------------------------
+// load all swaps
+export const loadAllSwaps = async ( provider, amm, dispatch) => {
+
+  const block = await provider.getBlockNumber()
+
+  const swapStream = await amm.queryFilter('Swap', 0, block)
+  const swaps = swapStream.map(event => {
+    return { hash: event.transactionHash, args: event.args  }
+  })
+  dispatch(swapsLoaded(swaps))
+
+
+}
