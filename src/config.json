@@ -1,13 +1,7 @@
 {
-  "31337": {
-    "bmtk": {
-      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-    },
-    "usd": {
-      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-    },
-    "amm": {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-    }
+  "11155111": {
+    "bmtk": { "address": "0x852E1E8e82E13E989cdA700b0B5eeF9e89AA7c63" },
+    "usd": { "address": "0x8065B793025289b70a96Cbb1a7e9429a3Ea37774" },
+    "amm": { "address": "0xddBEF6ec990DC30FC316197dcAEF72A72315c228" }
   }
 }
