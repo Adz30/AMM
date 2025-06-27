@@ -14,7 +14,7 @@ import { ethers } from "ethers";
 
 import Alert from "./Alert";
 
-import { swap, loadBalances, } from "../store/interactions";
+import { swap, loadBalances } from "../store/interactions";
 
 const Swap = () => {
   const [inputToken, setInputToken] = useState(null);
@@ -23,7 +23,6 @@ const Swap = () => {
   const [outputAmount, setOutputAmount] = useState(0);
 
   const [price, setPrice] = useState(0);
-
   const [showAlert, setShowAlert] = useState(false);
 
   const provider = useSelector((state) => state.provider.connection);
@@ -55,10 +54,7 @@ const Swap = () => {
 
       const _token1Amount = ethers.utils.parseUnits(e.target.value, "ether");
       const result = await amm.calculateToken1Swap(_token1Amount);
-      const _token2Amount = ethers.utils.formatUnits(
-        result.toString(),
-        "ether"
-      );
+      const _token2Amount = ethers.utils.formatUnits(result.toString(), "ether");
 
       setOutputAmount(_token2Amount.toString());
     } else {
@@ -66,14 +62,12 @@ const Swap = () => {
 
       const _token2Amount = ethers.utils.parseUnits(e.target.value, "ether");
       const result = await amm.calculateToken2Swap(_token2Amount);
-      const _token1Amount = ethers.utils.formatUnits(
-        result.toString(),
-        "ether"
-      );
+      const _token1Amount = ethers.utils.formatUnits(result.toString(), "ether");
 
       setOutputAmount(_token1Amount.toString());
     }
   };
+
   const swapHandler = async (e) => {
     e.preventDefault();
 
@@ -91,10 +85,10 @@ const Swap = () => {
     } else {
       await swap(provider, amm, tokens[1], inputToken, _inputAmount, dispatch);
     }
+
     await loadBalances(amm, tokens, account, dispatch);
 
     await getPrice();
-    await setShowAlert(true);
   };
 
   const getPrice = async () => {
@@ -107,8 +101,6 @@ const Swap = () => {
     } else {
       setPrice((await amm.token2Balance()) / (await amm.token1Balance()));
     }
-
-    setShowAlert(true);
   };
 
   useEffect(() => {
@@ -117,107 +109,143 @@ const Swap = () => {
     }
   }, [inputToken, outputToken]);
 
+  // Show alert when swap success/failure state changes
+  useEffect(() => {
+    if (typeof isSuccess === "boolean") {
+      setShowAlert(true);
+
+      const timer = setTimeout(() => setShowAlert(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
+
+  // Reset alert when tokens or input amount change
+  useEffect(() => {
+    setShowAlert(false);
+  }, [inputToken, outputToken, inputAmount]);
+
   return (
     <div>
       <Card style={{ maxWidth: "450px" }} className="mx-auto px-4">
         {account ? (
-          <Form
-            onSubmit={swapHandler}
-            style={{ maxWidth: "450px", margin: "50px auto" }}
-          >
-            <Row className="my-3">
-              <div className="d-flex justify-content-between">
-                <Form.Label>
-                  <strong>Input:</strong>
-                </Form.Label>
-                <Form.Text muted>
-                  Balance:{" "}
-                  {inputToken === symbols[0]
-                    ? balances[0]
-                    : inputToken === symbols[1]
-                    ? balances[1]
-                    : 0}
-                </Form.Text>
-              </div>
-              <InputGroup>
-                <Form.Control
-                  type="number"
-                  placeholder="0.0"
-                  min="0.0"
-                  step="any"
-                  onChange={(e) => inputHandler(e)}
-                  disabled={!inputToken}
-                />
-                <DropdownButton
-                  variant="outline-secondary"
-                  title={inputToken ? inputToken : "Select Token"}
-                >
-                  <DropdownItem
-                    onClick={(e) => setInputToken(e.target.innerHTML)}
-                  >
-                    BMTK
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={(e) => setInputToken(e.target.innerHTML)}
-                  >
-                    USD
-                  </DropdownItem>
-                </DropdownButton>
-              </InputGroup>
-            </Row>
+          <>
+            {/* Alert inside the card */}
+            {isSwapping ? (
+              <Alert
+                message={"Swap Pending..."}
+                transactionHash={null}
+                variant={"info"}
+                setShowAlert={setShowAlert}
+                style={{ marginBottom: "1rem" }}
+              />
+            ) : isSuccess && showAlert ? (
+              <Alert
+                message={"Swap Successful"}
+                transactionHash={transactionHash}
+                variant={"success"}
+                setShowAlert={setShowAlert}
+                style={{ marginBottom: "1rem" }}
+              />
+            ) : !isSuccess && showAlert ? (
+              <Alert
+                message={"Swap Failed"}
+                transactionHash={null}
+                variant={"danger"}
+                setShowAlert={setShowAlert}
+                style={{ marginBottom: "1rem" }}
+              />
+            ) : null}
 
-            <Row className="my-4">
-              <div className="d-flex justify-content-between">
-                <Form.Label>
-                  <strong>Output:</strong>
-                </Form.Label>
-                <Form.Text muted>
-                  Balance:
-                  {outputToken === symbols[0]
-                    ? balances[0]
-                    : outputToken === symbols[1]
-                    ? balances[1]
-                    : 0}
-                </Form.Text>
-              </div>
-              <InputGroup>
-                <Form.Control
-                  type="number"
-                  placeholder="0.0"
-                  value={outputAmount === 0 ? "" : outputAmount}
-                  disabled
-                />
-                <DropdownButton
-                  variant="outline-secondary"
-                  title={outputToken ? outputToken : "Select Token"}
-                >
-                  <DropdownItem
-                    onClick={(e) => setOutputToken(e.target.innerHTML)}
+            <Form
+              onSubmit={swapHandler}
+              style={{ maxWidth: "450px", margin: "50px auto" }}
+            >
+              <Row className="my-3">
+                <div className="d-flex justify-content-between">
+                  <Form.Label>
+                    <strong>Input:</strong>
+                  </Form.Label>
+                  <Form.Text muted>
+                    Balance:{" "}
+                    {inputToken === symbols[0]
+                      ? balances[0]
+                      : inputToken === symbols[1]
+                      ? balances[1]
+                      : 0}
+                  </Form.Text>
+                </div>
+                <InputGroup>
+                  <Form.Control
+                    type="number"
+                    placeholder="0.0"
+                    min="0.0"
+                    step="any"
+                    onChange={(e) => inputHandler(e)}
+                    disabled={!inputToken}
+                  />
+                  <DropdownButton
+                    variant="outline-secondary"
+                    title={inputToken ? inputToken : "Select Token"}
                   >
-                    BMTK
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={(e) => setOutputToken(e.target.innerHTML)}
+                    <DropdownItem onClick={(e) => setInputToken(e.target.innerHTML)}>
+                      BMTK
+                    </DropdownItem>
+                    <DropdownItem onClick={(e) => setInputToken(e.target.innerHTML)}>
+                      USD
+                    </DropdownItem>
+                  </DropdownButton>
+                </InputGroup>
+              </Row>
+
+              <Row className="my-4">
+                <div className="d-flex justify-content-between">
+                  <Form.Label>
+                    <strong>Output:</strong>
+                  </Form.Label>
+                  <Form.Text muted>
+                    Balance:{" "}
+                    {outputToken === symbols[0]
+                      ? balances[0]
+                      : outputToken === symbols[1]
+                      ? balances[1]
+                      : 0}
+                  </Form.Text>
+                </div>
+                <InputGroup>
+                  <Form.Control
+                    type="number"
+                    placeholder="0.0"
+                    value={outputAmount === 0 ? "" : outputAmount}
+                    disabled
+                  />
+                  <DropdownButton
+                    variant="outline-secondary"
+                    title={outputToken ? outputToken : "Select Token"}
                   >
-                    USD
-                  </DropdownItem>
-                </DropdownButton>
-              </InputGroup>
-            </Row>
+                    <DropdownItem onClick={(e) => setOutputToken(e.target.innerHTML)}>
+                      BMTK
+                    </DropdownItem>
+                    <DropdownItem onClick={(e) => setOutputToken(e.target.innerHTML)}>
+                      USD
+                    </DropdownItem>
+                  </DropdownButton>
+                </InputGroup>
+              </Row>
 
-            <Row className="my-3">
-              {isSwapping ? (
-                <Spinner
-                  animation="border"
-                  style={{ display: "block", margin: "0 auto" }}
-                />
-              ) : (
-                <Button type="submit">Swap</Button>
-              )}
+              <Row className="my-3">
+                {isSwapping ? (
+                  <Spinner
+                    animation="border"
+                    style={{ display: "block", margin: "0 auto" }}
+                  />
+                ) : (
+                  <Button type="submit">Swap</Button>
+                )}
 
-              <Form.Text muted>Exchange Rate: {price}</Form.Text>
-            </Row>
-          </Form>
+                <Form.Text muted>Exchange Rate: {price}</Form.Text>
+              </Row>
+            </Form>
+          </>
         ) : (
           <p
             className="d-flex justify-content-center align-items-center"
@@ -227,32 +255,8 @@ const Swap = () => {
           </p>
         )}
       </Card>
-
-      {isSwapping ? (
-        <Alert
-          message={"Swap Pending..."}
-          transactionHash={null}
-          variant={"info"}
-          setShowAlert={setShowAlert}
-        />
-      ) : isSuccess && showAlert ? (
-        <Alert
-          message={"Swap Successful"}
-          transactionHash={transactionHash}
-          variant={"success"}
-          setShowAlert={setShowAlert}
-        />
-      ) : !isSuccess && showAlert ? (
-        <Alert
-          message={"Swap Failed"}
-          transactionHash={null}
-          variant={"danger"}
-          setShowAlert={setShowAlert}
-        />
-      ) : (
-        <></>
-      )}
     </div>
   );
 };
+
 export default Swap;

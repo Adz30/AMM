@@ -1,7 +1,81 @@
-.alert{
-  max-width: 300px;
+/* === Global Bootstrap Overrides === */
+
+body {
+  background-color: #f9fbfc !important;
+  font-family: 'Inter', 'Segoe UI', sans-serif !important;
+  color: #2d2d2d !important;
+  font-size: 15px;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 10px !important;
+  font-weight: 500 !important;
+  padding: 10px 24px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background-color: #4a6cf7 !important;
+  border-color: #4a6cf7 !important;
+  color: #fff !important;
+}
+
+.btn-primary:focus,
+.btn-primary:active {
+  box-shadow: 0 0 0 0.2rem rgba(74, 108, 247, 0.4) !important;
+}
+
+/* Cards */
+.card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  border: none !important;
+  padding: 24px;
+  background-color: #ffffff !important;
+}
+
+/* Form Controls */
+.form-control {
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  border: 1px solid #dfe3e8 !important;
+  transition: border-color 0.2s ease-in-out;
+  box-shadow: none !important;
+}
+
+.form-control:focus {
+  border-color: #4a6cf7 !important;
+  outline: none !important;
+}
+
+/* InputGroup Text */
+.input-group-text {
+  background-color: #f1f3f5 !important;
+  border: 1px solid #dfe3e8 !important;
+  border-radius: 10px !important;
+  font-weight: 500;
+}
+
+/* Muted text (e.g., Form.Text) */
+.text-muted {
+  color: #6c757d !important;
+  font-size: 0.9em;
+}
+
+/* Alerts */
+.alert {
+  border-radius: 12px !important;
+  padding: 16px 24px !important;
+  max-width: 360px;
   position: absolute;
-  bottom: 100px;
+  bottom: 80px;
   right: 50px;
-  padding: 50;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
 }
