@@ -3,6 +3,7 @@
 A lightweight decentralized exchange (DEX) prototype enabling token swaps and liquidity provisioning, built with React, Solidity, and Hardhat, and deployed on the Ethereum Sepolia Testnet.
 
 🌐 Live Demo
+https://amm-rouge.vercel.app/
 
 📌 Project Overview
 
