@@ -1,92 +1,69 @@
-AMM (Automated Market Maker)
+⚖️ AMM (Automated Market Maker)
+
+A lightweight decentralized exchange (DEX) prototype enabling token swaps and liquidity provisioning, built with React, Solidity, and Hardhat, and deployed on the Ethereum Sepolia Testnet.
+
+🌐 Live Demo
 
 📌 Project Overview
 
-This project is a simple Automated Market Maker (AMM) built using React and Solidity. It allows users to swap between two deployed dummy ERC-20 tokens on the Ethereum Sepolia testnet. The AMM operates using a constant product formula (x * y = k) to maintain liquidity and facilitate decentralized token swaps.
+This Automated Market Maker (AMM) allows users to seamlessly swap between two dummy ERC-20 tokens, provide liquidity, and view live pricing — all powered by a smart contract using the constant product formula (x * y = k).
 
 🚀 Features
 
-Swap between two deployed dummy ERC-20 tokens.
-
-Liquidity provision functionality (users can add/remove liquidity).
-
-Real-time price updates using React and Redux.
-
-On-chain interactions using Hardhat and ethers.js.
-
-Basic charting for liquidity and price movements using ApexCharts.
-
+🔁 Swap between two deployed ERC-20 tokens (Sepolia testnet)
+💧 Add or remove liquidity from the pool
+📊 Real-time charts for price and liquidity via ApexCharts
+⚙️ On-chain interaction using Hardhat + ethers.js
+⚛️ React frontend with Redux state management
 🛠 Tech Stack
 
 Frontend
-
-React: UI framework for building the frontend.
-
-Redux Toolkit: State management for handling token balances and UI state.
-
-React Router: Navigation between different views.
-
-ApexCharts: Real-time visualization of price movements and liquidity.
-
-Bootstrap: For responsive UI components.
-
+React – UI framework
+Redux Toolkit – App state management
+React Router – Navigation
+ApexCharts – Charting for price/liquidity trends
+Bootstrap – Responsive UI components
 Smart Contracts & Blockchain
-
-Solidity: Smart contract programming language.
-
-Hardhat: Development and testing framework for Ethereum.
-
-Ethers.js: Blockchain interaction library.
-
-Sepolia Testnet: Contracts are deployed on the Sepolia Ethereum test network.
-
-📦 Installation & Setup (Run Locally)
+Solidity – Smart contract development
+Hardhat – Ethereum development environment
+Ethers.js – Blockchain integration
+Sepolia Testnet – Deployed test contracts
+📦 Installation & Setup
 
 Prerequisites
 
-Node.js and npm installed.
+Node.js & npm installed
+npm install 
 
-Hardhat installed globally:
+Sepolia wallet with test ETH (e.g., via faucet)
 
-npm install -g hardhat
-
-A Sepolia testnet wallet with some test ETH.
-
-Clone the repository
+Clone & Install
 
 git clone https://github.com/Adz30/AMM.git
 cd AMM
-
-Install dependencies
-
 npm install
-
-Start the development server
-
+Run Frontend
 npm start
 
-Deploy Smart Contracts Locally
-
+Deploy Contracts Locally
 Start a local Hardhat node:
 
 npx hardhat node
 
-Deploy the contracts to the local network:
-
+Deploy the contracts:
 npx hardhat run scripts/deploy.js --network localhost
-
-
-
 
 📜 Usage
 
-Users can swap between the two dummy tokens on the AMM interface.
+Connect your wallet (Sepolia network)
+Swap tokens via the AMM interface
+Add/remove liquidity to participate in fee rewards
+Watch the price curve update in real time
+🧪 Testing
 
-Liquidity providers can add or remove liquidity.
+To run contract tests:
 
-The pool price updates dynamically based on swaps.
+npx hardhat test
+📄 License
 
 This project is open-source and available under the MIT License.
-
-
-
